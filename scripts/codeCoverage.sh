@@ -1,10 +1,4 @@
 #!/bin/bash
-LAUNCH_DIR=`pwd`
-PROJECT="NMTools"
-OBJECT_DIR="${PROJECT}.dir"
-
-DEFAULT_WHITELIST=".*cpp$"
-DEFAULT_BLACKLIST="/usr/local/probe/.*"
 
 # --- WHITELIST ---
 #
@@ -51,6 +45,36 @@ function createFilterForGcovr ()
    echo "$FILTER"
 }
 
+function getProjectNameFromCMake ()
+{
+   filename="$1"
+   filenameRegex="SET\(LIBRARY_TO_BUILD (.*)\)$"
+   while IFS='' read -r line || [[ -n "$line" ]]; do
+      if [[ $line =~ $filenameRegex ]] ; then
+         echo "${BASH_REMATCH[1]}"
+         break
+      fi
+   done < $filename
+}
+
+function cleanAndRebuildDir ()
+{
+   DIRECTORY="$1"
+   rm -rf $DIRECTORY
+   mkdir -p $DIRECTORY
+}
+
+LAUNCH_DIR=`pwd`
+CMAKELISTSFILE=$LAUNCH_DIR/CMakeLists.txt
+
+PROJECT=$(getProjectNameFromCMake "$CMAKELISTSFILE")
+OBJECT_DIR="${PROJECT}.dir"
+
+DEFAULT_WHITELIST=".*cpp$"
+DEFAULT_BLACKLIST="/usr/local/probe/.*"
+
+echo "The Project name is : $PROJECT"
+
 # --- DIRECTORY SETUP ---
 #
 # Get the gtest library
@@ -61,12 +85,11 @@ cd ..
 
 # Clean up and create coverage dir
 COVERAGE_DIR=coverage
-rm -rf $COVERAGE_DIR
-mkdir -p $COVERAGE_DIR
+cleanAndRebuildDir "$COVERAGE_DIR"
 
 # Clean up and create local build dir
-rm -rf build
-mkdir -p build
+BUILD_DIR=build
+cleanAndRebuildDir "$BUILD_DIR"
 cd build
 
 # --- VERSIONING ---
@@ -84,15 +107,8 @@ make -j
 
 # --- RUN THE UNIT TESTS ---
 #
-# The test `RealWorldExample_DAS_Matching` requires a file in the local
-#    NMTools/test/resource directory. The test fails if run from the NMTools/build
-#    directory because there is no NMTools/build/test/resources directory.
-#    The first line of the test is the ASSERT that fails. We need the test to
-#    pass so that it can execute all of its code for proper code coverage. We will
-#    get around this issue by jumping back out of the build dir in order to 
-#    execute the UnitTestRunner
-#
-./UnitTestRunner
+cp $LAUNCH_DIR/scripts/unitTestRunner.sh .
+sh unitTestRunner.sh
 cd ..
 
 # --- WHITELIST FORMATTING ---
