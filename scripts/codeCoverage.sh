@@ -92,8 +92,8 @@ make -j
 #    get around this issue by jumping back out of the build dir in order to 
 #    execute the UnitTestRunner
 #
+./UnitTestRunner
 cd ..
-build/UnitTestRunner
 
 # --- WHITELIST FORMATTING ---
 #
