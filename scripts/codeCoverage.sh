@@ -1,4 +1,6 @@
 #!/bin/bash
+trap "exit 1" TERM
+export PID=$$
 
 # --- WHITELIST ---
 #
@@ -48,6 +50,10 @@ function createFilterForGcovr ()
 function getProjectNameFromCMake ()
 {
    filename="$1"
+   if [ ! -e $filename ] ; then
+      echo "ERROR: No CMakeLists.txt file in current repository. This script was either run from the wrong location or in a repository that doesn't use CMake" >&2
+      kill -s TERM $PID
+   fi
    filenameRegex="SET\(LIBRARY_TO_BUILD (.*)\)$"
    while IFS='' read -r line || [[ -n "$line" ]]; do
       if [[ $line =~ $filenameRegex ]] ; then
@@ -65,6 +71,7 @@ function cleanAndRebuildDir ()
 }
 
 LAUNCH_DIR=`pwd`
+echo "Launch dir is $LAUNCH_DIR"
 CMAKELISTSFILE=$LAUNCH_DIR/CMakeLists.txt
 
 PROJECT=$(getProjectNameFromCMake "$CMAKELISTSFILE")
