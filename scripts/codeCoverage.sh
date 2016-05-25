@@ -71,7 +71,6 @@ function cleanAndRebuildDir ()
 }
 
 LAUNCH_DIR=`pwd`
-echo "Launch dir is $LAUNCH_DIR"
 CMAKELISTSFILE=$LAUNCH_DIR/CMakeLists.txt
 
 PROJECT=$(getProjectNameFromCMake "$CMAKELISTSFILE")
@@ -90,11 +89,11 @@ cd 3rdparty
 unzip -u gtest-1.7.0.zip
 cd ..
 
-# Clean up and create coverage dir
+# Clean up and recreate coverage dir
 COVERAGE_DIR=coverage
 cleanAndRebuildDir "$COVERAGE_DIR"
 
-# Clean up and create local build dir
+# Clean up and recreate local build dir
 BUILD_DIR=build
 cleanAndRebuildDir "$BUILD_DIR"
 cd build
