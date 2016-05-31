@@ -9,7 +9,7 @@ export PID=$$
 #    HEADER_WHITELIST="myfile.h"
 #    HEADER_WHITELIST="myfile.h myotherfile.h"
 #
-HEADER_WHITELIST=
+HEADER_WHITELIST="MockAlarmClock.h"
 
 # --- BLACKLIST ---
 #
