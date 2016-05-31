@@ -13,24 +13,22 @@ DEFAULT_WHITELIST = ".*cpp$"
 DEFAULT_BLACKLIST = "/usr/local/probe/.*"
 
 CMAKEFILEPATH = "CMakeLists.txt"
-LIBRARY_TO_BUILD_REGEX = '^SET\(LIBRARY_TO_BUILD (.*)\)$'
+LIBRARY_TO_BUILD_REGEX = 'SET\(LIBRARY_TO_BUILD (.*)\)$'
 
-def getFileContent(filename):
+def get_file_content(filename):
    with open(filename) as f:
       content = f.readlines()
       return content
 
-def lineContainsLibraryToBuild(line_str):
+def get_library_to_build_name(line_str):
    matchObj = re.search(LIBRARY_TO_BUILD_REGEX, line_str, re.M|re.I)
    if matchObj:
       return True, matchObj.group(1)
    return False, ""
 
-def getProjectNameFromCMakeListsFile(full_file_path):
-   # file_content = getFileContent(filename=full_file_path)
-   # for line in file_content:
-   for line in getFileContent(filename=full_file_path):
-      found, projectName = lineContainsLibraryToBuild(line_str=line)
+def get_project_name_from_CMakeLists_file(full_file_path):
+   for line in get_file_content(filename=full_file_path):
+      found, projectName = get_library_to_build_name(line_str=line)
       if found:
          return True, projectName
    return False, ""
@@ -44,31 +42,31 @@ def santize_input_args(arg_parser, args):
    if len(sys.argv) > 3:
       print_error_and_usage(argParser=arg_parser, error="Too many arguments supplied.")
 
-def destroyDirectory(dir_path):
+def destroy_directory(dir_path):
    shutil.rmtree(dir_path)
 
 def clean_and_build_directory(dir_path):
    if (os.path.exists(dir_path)):
-      destroyDirectory(dir_path=dir_path)
+      destroy_directory(dir_path=dir_path)
    os.makedirs(dir_path)
 
-def removeFileExtension(filename):
+def remove_file_extension(filename):
    return os.path.splitext(filename)[0]
     
-def stripFileFromFullPath(full_file_path):
+def strip_file_from_full_path(full_file_path):
    return ntpath.basename(full_file_path)
 
-def unzipFile(full_file_path, directory_to_extract_to):
+def unzip_file(full_file_path, directory_to_extract_to):
    to_unzip = zipfile.ZipFile(full_file_path, 'r')
-   unzipped_dir_name = removeFileExtension(filename=stripFileFromFullPath(full_file_path=full_file_path))
+   unzipped_dir_name = remove_file_extension(filename=strip_file_from_full_path(full_file_path=full_file_path))
    full_unzipped_dir_path = directory_to_extract_to + "/" + unzipped_dir_name
    if os.path.exists(full_unzipped_dir_path):
-      destroyDirectory(full_unzipped_dir_path)
+      destroy_directory(full_unzipped_dir_path)
    to_unzip.extractall(directory_to_extract_to)
    to_unzip.close() 
 
 
-def runCMakeCmd():
+def run_CMake_cmd():
    CMAKE = '/usr/local/probe/bin/cmake'
    DEBUG_FLAG = '-DUSE_LR_DEBUG=ON'
    VERSION_FLAG = '-DVERSION=' + str(1)
@@ -80,12 +78,12 @@ def runCMakeCmd():
    ret_code = subprocess.check_call(CMAKE_CMD, stderr=subprocess.STDOUT, shell=True)
    print "CMake return code: " + str(ret_code)
 
-def compileProject():
+def compile_project():
    COMPILE_CMD = ['make -j']
    ret_code = subprocess.check_call(COMPILE_CMD, stderr=subprocess.STDOUT, shell=True)
    print "Compile return code: " + str(ret_code)
 
-def runUnitTestRunner(launch_dir):
+def run_UnitTestRunner(launch_dir):
    CP_RUNNER_SCRIPT = 'cp ' + launch_dir + '/scripts/unitTestRunner.sh .'
    print "CP_RUNNER_SCRIPT = " + CP_RUNNER_SCRIPT
    CP_RUNNER_SCRIPT_CMD = [CP_RUNNER_SCRIPT]
@@ -98,7 +96,7 @@ def runUnitTestRunner(launch_dir):
       print "UnitTestRunner return code: bad"
 
 
-def runGcovr(project_name, whitelist_filter, blacklist_filter):
+def run_gcovr(project_name, whitelist_filter, blacklist_filter):
    GCOVR = '/usr/bin/gcovr'
    VERBOSE = '--verbose'
    SORT_PERCENTAGE = '--sort-percentage'
@@ -117,14 +115,14 @@ def runGcovr(project_name, whitelist_filter, blacklist_filter):
    except:
       print "Gcovr return code: bad"
 
-def copyCoverageFilesIntoCovDir(object_dir, launch_dir):
+def copy_coverage_files_into_cov_dir(object_dir, launch_dir):
    CP_COV_FILES_STR = 'cp ' + launch_dir + '/build/CMakeFiles/' + object_dir + '/src/* ' + launch_dir +'/coverage'
    try:
       ret_code = subprocess.check_call([CP_COV_FILES_STR], stderr=subprocess.STDOUT, shell=True)
    except:
       print "Copy coverage files return code: bad"
 
-def formatUserList(user_list):
+def format_user_list(user_list):
    formatted_list = None
    if user_list is not None:
       for whitelist_item in user_list.split():
@@ -137,7 +135,7 @@ def formatUserList(user_list):
       print "list is empty"
    return formatted_list
 
-def generateGcovrFilter(formatted_user_list, default_list):
+def generate_gcovr_filter(formatted_user_list, default_list):
    if formatted_user_list is None:
       return default_list
    else:
@@ -152,21 +150,14 @@ def main(argv):
 
    santize_input_args(arg_parser=argParser, args=args)
   
-   foundProjectName, projectName = getProjectNameFromCMakeListsFile(full_file_path=CMAKEFILEPATH)
+   foundProjectName, projectName = get_project_name_from_CMakeLists_file(full_file_path=CMAKEFILEPATH)
    if not foundProjectName:
       print "ERROR: No project name found in CMakeLists.txt"
       sys.exit(2)   
 
    LAUNCH_DIR = os.getcwd()
-   print "Launch Dir = " + LAUNCH_DIR
-
-
    PROJECT = projectName
    OBJ_DIR = PROJECT + '.dir'
-
-   print "PROJECT: " + PROJECT
-   print "OBJ_DIR: " + OBJ_DIR
-
    USER_WHITELIST = None
    USER_BLACKLIST = None
    GTEST_ZIP_PATH = LAUNCH_DIR + '/3rdparty/gtest-1.7.0.zip'
@@ -178,23 +169,21 @@ def main(argv):
       USER_BLACKLIST = args.blacklist
       print "USER_BLACKLIST = " + USER_BLACKLIST
 
-   unzipFile(full_file_path=GTEST_ZIP_PATH, directory_to_extract_to="3rdparty")
+   unzip_file(full_file_path=GTEST_ZIP_PATH, directory_to_extract_to="3rdparty")
 
    clean_and_build_directory(dir_path="coverage")
    clean_and_build_directory(dir_path="build")
+
    os.chdir(LAUNCH_DIR + '/build')
-
-   runCMakeCmd()
-   compileProject()
-   runUnitTestRunner(launch_dir=LAUNCH_DIR)
-
+   run_CMake_cmd()
+   compile_project()
+   run_UnitTestRunner(launch_dir=LAUNCH_DIR)
    os.chdir(LAUNCH_DIR + '/coverage')
-   gcovr_whitelist = generateGcovrFilter(formatted_user_list=formatUserList(user_list=USER_WHITELIST), default_list=DEFAULT_WHITELIST)
-   print "formatted_user_whitelist is now: " + str(gcovr_whitelist)
-   gcovr_blacklist = generateGcovrFilter(formatted_user_list=formatUserList(user_list=USER_BLACKLIST), default_list=DEFAULT_BLACKLIST)
-   print "formatted_user_blacklist is now: " + str(gcovr_blacklist)
-   copyCoverageFilesIntoCovDir(object_dir=OBJ_DIR, launch_dir=LAUNCH_DIR)
-   runGcovr(project_name=PROJECT, whitelist_filter=gcovr_whitelist, blacklist_filter=gcovr_blacklist)
+   
+   gcovr_whitelist = generate_gcovr_filter(formatted_user_list=format_user_list(user_list=USER_WHITELIST), default_list=DEFAULT_WHITELIST)
+   gcovr_blacklist = generate_gcovr_filter(formatted_user_list=format_user_list(user_list=USER_BLACKLIST), default_list=DEFAULT_BLACKLIST)
+   copy_coverage_files_into_cov_dir(object_dir=OBJ_DIR, launch_dir=LAUNCH_DIR)
+   run_gcovr(project_name=PROJECT, whitelist_filter=gcovr_whitelist, blacklist_filter=gcovr_blacklist)
 
 if __name__ == '__main__':
     main(sys.argv[1:])

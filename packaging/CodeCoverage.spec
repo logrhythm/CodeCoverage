@@ -22,9 +22,7 @@ fi
 %build
 cd %{name}
 mkdir -p $RPM_BUILD_ROOT/usr/local/probe/bin
-pwd
-cp scripts/codeCoverage.sh $RPM_BUILD_ROOT/usr/local/probe/bin/codeCoverage
-cp scripts/CodeCoverage.py $RPM_BUILD_ROOT/usr/local/probe/bin/TheNewCodeCoverage.py
+cp scripts/CodeCoverage.py $RPM_BUILD_ROOT/usr/local/probe/bin/CodeCoverage.py
 
 %post
 
