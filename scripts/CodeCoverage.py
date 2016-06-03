@@ -16,8 +16,8 @@ CMAKEFILEPATH = "CMakeLists.txt"
 LIBRARY_TO_BUILD_REGEX = 'SET\(LIBRARY_TO_BUILD (.*)\)$'
 
 def get_file_content(filename):
-    with open(filename) as f:
-        content = f.readlines()
+    with open(filename) as filehandle:
+        content = filehandle.readlines()
         return content
 
 def get_library_to_build_name(line_str):
@@ -65,7 +65,6 @@ def unzip_file(full_file_path, directory_to_extract_to):
     to_unzip.extractall(directory_to_extract_to)
     to_unzip.close()
 
-
 def run_CMake_cmd():
     CMAKE = '/usr/local/probe/bin/cmake'
     DEBUG_FLAG = '-DUSE_LR_DEBUG=ON'
@@ -75,13 +74,21 @@ def run_CMake_cmd():
     CMAKELISTS_DIR = '..'
     CMAKE_STR = CMAKE + ' ' + DEBUG_FLAG + ' ' + VERSION_FLAG + ' ' + ARG1_FLAGS + ' ' + COMPILER_EXE_FLAG + ' ' + CMAKELISTS_DIR
     CMAKE_CMD = [CMAKE_STR]
-    ret_code = subprocess.check_call(CMAKE_CMD, stderr=subprocess.STDOUT, shell=True)
-    print "CMake return code: " + str(ret_code)
+    try:
+        ret_code = subprocess.check_call(CMAKE_CMD, stderr=subprocess.STDOUT, shell=True)
+        print "CMake return code: " + str(ret_code)
+    except:
+        print "ERROR: CMake command failed!"
+        sys.exit(1)
 
 def compile_project():
-    COMPILE_CMD = ['make -j']
-    ret_code = subprocess.check_call(COMPILE_CMD, stderr=subprocess.STDOUT, shell=True)
-    print "Compile return code: " + str(ret_code)
+    COMPILE_CMD = ['make -j8']
+    try:
+        ret_code = subprocess.check_call(COMPILE_CMD, stderr=subprocess.STDOUT, shell=True)
+        print "Compile return code: " + str(ret_code)
+    except:
+        print "ERROR: Compile project failed!"
+        sys.exit(1)
 
 def run_UnitTestRunner(launch_dir):
     CP_RUNNER_SCRIPT = 'cp ' + launch_dir + '/scripts/unitTestRunner.sh ' + launch_dir + '/build'
@@ -91,8 +98,10 @@ def run_UnitTestRunner(launch_dir):
     RUNNER_SCRIPT_CMD = ['sh unitTestRunner.sh']
     try:
         ret_code = subprocess.check_call(RUNNER_SCRIPT_CMD, stderr=subprocess.STDOUT, shell=True)
+        print "UnitTestRunner process return code: " + str(ret_code)
     except:
-        print "UnitTestRunner return code: bad"
+        print "ERROR: UnitTestRunner process failed!"
+        sys.exit(1)
 
 def run_gcovr(project_name, whitelist_filter, blacklist_filter):
     GCOVR = '/usr/bin/gcovr'
@@ -108,15 +117,19 @@ def run_gcovr(project_name, whitelist_filter, blacklist_filter):
     GCOVR_CMD_STR = GCOVR + ' ' + FLAGS + ' '  + OUTPUT_FILE
     try:
         ret_code = subprocess.check_call([GCOVR_CMD_STR], stderr=subprocess.STDOUT, shell=True)
+        print "Gcovr process return code: " + str(ret_code)
     except:
-        print "Gcovr return code: bad"
+        print "ERROR: Gcovr process failed!"
+        sys.exit(1)
 
 def copy_coverage_files_into_cov_dir(object_dir, launch_dir):
     CP_COV_FILES_STR = 'cp ' + launch_dir + '/build/CMakeFiles/' + object_dir + '/src/* ' + launch_dir +'/coverage'
     try:
         ret_code = subprocess.check_call([CP_COV_FILES_STR], stderr=subprocess.STDOUT, shell=True)
+        print "Copy coverage files into coverage directory return code: " + str(ret_code)
     except:
-        print "Copy coverage files return code: bad"
+        print "ERROR: Copy coverage files into coverage directory failed!"
+        sys.exit(1)
 
 def format_user_list(user_list):
     formatted_list = None
@@ -127,8 +140,6 @@ def format_user_list(user_list):
                 formatted_list = '.*' + whitelist_item + '$'
             else:
                 formatted_list = formatted_list + '|.*'+whitelist_item+'$'
-    else:
-        print "list is empty" #Write something better here
     return formatted_list
 
 def generate_gcovr_filter(formatted_user_list, default_list):
@@ -139,9 +150,17 @@ def generate_gcovr_filter(formatted_user_list, default_list):
 
 def main(argv):
     argParser = argparse.ArgumentParser(description="Generate code coverage information for a Network Monitor repository that uses CMake")
-    argParser.add_argument("-w", "--whitelist", dest="whitelist", metavar="HEADER_FILE", help="Whitelist a header or template file for code coverage")
-    argParser.add_argument("-b", "--blacklist", dest="blacklist", metavar="SOURCE_FILE", help="Blacklist a source file for code coverage")
-   
+    argParser.add_argument("-w",
+                           "--whitelist",
+                           dest="whitelist",
+                           metavar="HEADER_FILE",
+                           help="Whitelist a header or template file for code coverage")
+    argParser.add_argument("-b",
+                           "--blacklist",
+                           dest="blacklist",
+                           metavar="SOURCE_FILE",
+                           help="Blacklist a source file for code coverage")
+
     args = argParser.parse_args()
 
     santize_input_args(arg_parser=argParser, args=args)
