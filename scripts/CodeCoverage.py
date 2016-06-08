@@ -100,8 +100,9 @@ def run_UnitTestRunner(launch_dir):
         ret_code = subprocess.check_call(RUNNER_SCRIPT_CMD, stderr=subprocess.STDOUT, shell=True)
         print "UnitTestRunner process return code: " + str(ret_code)
     except:
+        # The script will not exit here, as some repos have tests that will
+        #   inherently fail during code coverage (FileIO, ProbeTransmogrifier)
         print "ERROR: UnitTestRunner process failed!"
-        sys.exit(1)
 
 def run_gcovr(project_name, whitelist_filter, blacklist_filter):
     GCOVR = '/usr/bin/gcovr'
