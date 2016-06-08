@@ -3,7 +3,7 @@ Version:       %{version}
 Release:       1%{?dist}
 Summary:       A wrapper for building and running code coverage on NetMon C++ repositories
 Group:         Development/Tools
-License:       (c) Copyright 2003-2016, LogRhythm, Inc.  All rights reserved.
+License:       MIT
 BuildRequires: probecmake >= 2.8
 ExclusiveArch: x86_64
 
