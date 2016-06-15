@@ -31,5 +31,5 @@ cp scripts/CodeCoverage.py $RPM_BUILD_ROOT/usr/local/probe/bin/CodeCoverage.py
 %postun
 
 %files
-%defattr(-,dpi,dpi,-)
-/usr/local/probe/bin
+%dir %attr(0700, dpi, dpi) /usr/local/probe/bin
+%attr(0755, dpi, dpi) /usr/local/probe/bin/CodeCoverage.py
