@@ -105,7 +105,7 @@ def run_UnitTestRunner(launch_dir):
         print "ERROR: UnitTestRunner process failed!"
 
 def run_gcovr(project_name, whitelist_filter, blacklist_filter):
-    GCOVR = '/usr/bin/gcovr'
+    GCOVR = '/usr/local/probe/bin/gcovr'
     VERBOSE = '--verbose'
     SORT_PERCENTAGE = '--sort-percentage'
     FILTER = '--filter=\"'+whitelist_filter+'\"'
