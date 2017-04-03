@@ -10,7 +10,7 @@ import ntpath
 import subprocess
 
 DEFAULT_WHITELIST = ".*cpp$"
-DEFAULT_BLACKLIST = "/usr/local/probe/.*"
+DEFAULT_BLACKLIST = "/usr/local/probe/.*|/usr/local/.*"
 
 CMAKEFILEPATH = "CMakeLists.txt"
 LIBRARY_TO_BUILD_REGEX = 'SET\(LIBRARY_TO_BUILD (.*)\)$'
