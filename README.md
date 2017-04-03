@@ -12,3 +12,9 @@ cd FileIO
 /usr/local/probe/bin/CodeCoverage.py
 ```
 This will generate the code coverage from the unit tests. The result will be stored in `FileIO/coverage/coverage_FileIO.html` which you can view in your browser
+
+
+## Requirements
+* cmake
+* gcovr
+* g++ 4.8 or newer
