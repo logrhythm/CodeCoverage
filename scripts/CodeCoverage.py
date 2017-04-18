@@ -71,14 +71,16 @@ def unzip_file(full_file_path, directory_to_extract_to):
 
 def get_cmake(): 
     if PROBE_BUILD:
-        print "return probe cmake"
+        print "using /usr/local/probe/bin/cmake"
         return '/usr/local/probe/bin/cmake'
     return 'cmake'
 
 def get_make_arguments():
+    default_args = '-DCMAKE_CXX_COMPILER_ARG1:STRING=\'-std=c++14 -Wall -Werror -g -gdwarf-2 -fno-elide-constructors -fprofile-arcs -ftest-coverage -O0 -fPIC -m64  -fno-inline -fno-inline-small-functions -fno-default-inline '
     if PROBE_BUILD:
-        return '-DCMAKE_CXX_COMPILER_ARG1:STRING=\'-std=c++14 -Wall -Werror -g -gdwarf-2 -fno-elide-constructors -fprofile-arcs -ftest-coverage -O0 -fPIC -m64 -Wl,-rpath -Wl,. -Wl,-rpath -Wl,/usr/local/probe/lib -Wl,-rpath -Wl,/usr/local/probe/lib64 -fno-inline -fno-inline-small-functions -fno-default-inline\''
-    return '-DCMAKE_CXX_COMPILER_ARG1:STRING=\'-Wall -Werror -g -gdwarf-2 -fno-elide-constructors -fprofile-arcs -ftest-coverage -O0 -fPIC -m64  -fno-inline -fno-inline-small-functions -fno-default-inline\''
+        default_args += ' -Wl,-rpath -Wl,. -Wl,-rpath -Wl,/usr/local/probe/lib -Wl,-rpath -Wl,/usr/local/probe/lib64 '
+    default_args += '\''
+    return default_args
 
 def get_compiler():
     if PROBE_BUILD:
@@ -208,13 +210,14 @@ def main(argv):
     USER_BLACKLIST = None
     GTEST_ZIP_PATH = LAUNCH_DIR + '/3rdparty/gtest-1.7.0.zip'
     global PROBE_BUILD
+    global DEFAULT_BLACKLIST
 
     if os.path.exists("/usr/local/probe/bin/cmake"):
         PROBE_BUILD=True
-        print "Using PROBE_BUILD defaults"
+        print "Using /usr/local/probe as the default path"
     else: 
        PROBE_BUILD=False
-       print "Using /usr/local/ as the default"
+       print "Using /usr/local/ as the default path"
        DEFAULT_BLACKLIST = "/usr/local/.*"
 
 
