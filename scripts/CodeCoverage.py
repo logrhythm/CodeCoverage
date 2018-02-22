@@ -8,12 +8,15 @@ import shutil
 import zipfile
 import ntpath
 import subprocess
+import os.path
 
 DEFAULT_WHITELIST = ".*cpp$"
 DEFAULT_BLACKLIST = "/usr/local/probe/.*"
 
 CMAKEFILEPATH = "CMakeLists.txt"
 LIBRARY_TO_BUILD_REGEX = 'SET\(LIBRARY_TO_BUILD (.*)\)$'
+
+PROBE_BUILD = True
 
 def get_file_content(filename):
     with open(filename) as filehandle:
@@ -65,12 +68,31 @@ def unzip_file(full_file_path, directory_to_extract_to):
     to_unzip.extractall(directory_to_extract_to)
     to_unzip.close()
 
-def run_CMake_cmd():
-    CMAKE = '/usr/local/probe/bin/cmake'
+
+def get_cmake(): 
+    if PROBE_BUILD:
+        print "using /usr/local/probe/bin/cmake"
+        return '/usr/local/probe/bin/cmake'
+    return 'cmake'
+
+def get_make_arguments():
+    default_args = '-DCMAKE_CXX_COMPILER_ARG1:STRING=\'-std=c++14 -Wall -Werror -g -gdwarf-2 -fno-elide-constructors -fprofile-arcs -ftest-coverage -O0 -fPIC -m64  -fno-inline -fno-inline-small-functions -fno-default-inline '
+    if PROBE_BUILD:
+        default_args += ' -Wl,-rpath -Wl,. -Wl,-rpath -Wl,/usr/local/probe/lib -Wl,-rpath -Wl,/usr/local/probe/lib64 '
+    default_args += '\''
+    return default_args
+
+def get_compiler():
+    if PROBE_BUILD:
+        return '-DCMAKE_CXX_COMPILER=/usr/local/probe/bin/g++'
+    return 'g++'
+
+def run_cmake_cmd():
+    CMAKE = get_cmake()
     DEBUG_FLAG = '-DUSE_LR_DEBUG=ON'
     VERSION_FLAG = '-DVERSION=' + str(1)
-    ARG1_FLAGS = '-DCMAKE_CXX_COMPILER_ARG1:STRING=\'-Wall -Werror -g -gdwarf-2 -fno-elide-constructors -fprofile-arcs -ftest-coverage -O0 -fPIC -m64 -Wl,-rpath -Wl,. -Wl,-rpath -Wl,/usr/local/probe/lib -Wl,-rpath -Wl,/usr/local/probe/lib64 -fno-inline -fno-inline-small-functions -fno-default-inline\''
-    COMPILER_EXE_FLAG = '-DCMAKE_CXX_COMPILER=/usr/local/probe/bin/g++'
+    ARG1_FLAGS = get_make_arguments()
+    COMPILER_EXE_FLAG =  get_compiler()
     CMAKELISTS_DIR = '..'
     CMAKE_STR = CMAKE + ' ' + DEBUG_FLAG + ' ' + VERSION_FLAG + ' ' + ARG1_FLAGS + ' ' + COMPILER_EXE_FLAG + ' ' + CMAKELISTS_DIR
     CMAKE_CMD = [CMAKE_STR]
@@ -104,13 +126,24 @@ def run_UnitTestRunner(launch_dir):
         #   inherently fail during code coverage (FileIO, ProbeTransmogrifier)
         print "ERROR: UnitTestRunner process failed!"
 
+def get_gcovr():
+    if PROBE_BUILD:
+        return '/usr/local/probe/bin/gcovr'
+    return 'gcovr'
+
+def get_gcov():
+    if PROBE_BUILD:
+        return '--gcov-executable /usr/local/probe/bin/gcov'
+    return '--gcov-executable gcov'
+
+
 def run_gcovr(project_name, whitelist_filter, blacklist_filter):
-    GCOVR = '/usr/local/probe/bin/gcovr'
+    GCOVR = get_gcovr()
     VERBOSE = '--verbose'
     SORT_PERCENTAGE = '--sort-percentage'
     FILTER = '--filter=\"'+whitelist_filter+'\"'
     EXCLUDE = '--exclude=\"'+blacklist_filter+'\"'
-    GCOV_EXE = '--gcov-executable /usr/local/probe/bin/gcov'
+    GCOV_EXE = get_gcov()
     EXCLUDE_UNREACHABLE = '--exclude-unreachable-branches'
     HTML_FLAGS = '--html --html-details'   
     OUTPUT_FILE = '-o coverage_' + project_name + '.html'
@@ -120,7 +153,7 @@ def run_gcovr(project_name, whitelist_filter, blacklist_filter):
         ret_code = subprocess.check_call([GCOVR_CMD_STR], stderr=subprocess.STDOUT, shell=True)
         print "Gcovr process return code: " + str(ret_code)
     except:
-        print "ERROR: Gcovr process failed!"
+        print "ERROR: Gcovr process failed! : \n" + GCOVR_CMD_STR
         sys.exit(1)
 
 def copy_coverage_files_into_cov_dir(object_dir, launch_dir):
@@ -163,7 +196,6 @@ def main(argv):
                            help="Blacklist a source file for code coverage")
 
     args = argParser.parse_args()
-
     santize_input_args(arg_parser=argParser, args=args)
   
     found_project_name, project_name = get_project_name_from_CMakeLists_file(full_file_path=CMAKEFILEPATH)
@@ -177,6 +209,18 @@ def main(argv):
     USER_WHITELIST = None
     USER_BLACKLIST = None
     GTEST_ZIP_PATH = LAUNCH_DIR + '/3rdparty/gtest-1.7.0.zip'
+    global PROBE_BUILD
+    global DEFAULT_BLACKLIST
+
+    if os.path.exists("/usr/local/probe/bin/cmake"):
+        PROBE_BUILD=True
+        print "Using /usr/local/probe as the default path"
+    else: 
+       PROBE_BUILD=False
+       print "Using /usr/local/ as the default path"
+       DEFAULT_BLACKLIST = "/usr/local/.*"
+
+
 
     if args.whitelist:
         USER_WHITELIST = args.whitelist
@@ -191,7 +235,7 @@ def main(argv):
     clean_and_build_directory(dir_path="build")
 
     os.chdir(LAUNCH_DIR + '/build')
-    run_CMake_cmd()
+    run_cmake_cmd()
     compile_project()
     run_UnitTestRunner(launch_dir=LAUNCH_DIR)
     os.chdir(LAUNCH_DIR + '/coverage')
