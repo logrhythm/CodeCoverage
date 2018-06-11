@@ -76,15 +76,15 @@ def get_cmake():
     return 'cmake'
 
 def get_make_arguments():
-    default_args = '-DCMAKE_CXX_COMPILER_ARG1:STRING=\'-std=c++14 -Wall -Werror -g -gdwarf-2 -fno-elide-constructors -fprofile-arcs -ftest-coverage -O0 -fPIC -m64  -fno-inline -fno-inline-small-functions -fno-default-inline '
+    default_args = '-DCMAKE_CXX_COMPILER_ARG1:STRING=\'-std=c++14 -Wall -Werror -g -gdwarf-2 -fno-elide-constructors -fprofile-arcs -ftest-coverage -O0 -fPIC -m64  -fno-inline -fno-inline-small-functions -fno-default-inline -I /usr/local/probe/include'
     if PROBE_BUILD:
-        default_args += ' -Wl,-rpath -Wl,. -Wl,-rpath -Wl,/usr/local/probe/lib -Wl,-rpath -Wl,/usr/local/probe/lib64 '
+        default_args += ' -Wl,-rpath -Wl,. -Wl,-rpath -Wl,/usr/local/gcc/lib -Wl,-rpath -Wl,/usr/local/gcc/lib64 '
     default_args += '\''
     return default_args
 
 def get_compiler():
     if PROBE_BUILD:
-        return '-DCMAKE_CXX_COMPILER=/usr/local/probe/bin/g++'
+        return '-DCMAKE_CXX_COMPILER=/usr/local/gcc/bin/g++'
     return 'g++'
 
 def run_cmake_cmd():
@@ -133,7 +133,7 @@ def get_gcovr():
 
 def get_gcov():
     if PROBE_BUILD:
-        return '--gcov-executable /usr/local/probe/bin/gcov'
+        return '--gcov-executable /usr/bin/gcov'
     return '--gcov-executable gcov'
 
 
