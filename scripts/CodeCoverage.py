@@ -76,7 +76,7 @@ def get_cmake():
     return 'cmake'
 
 def get_make_arguments():
-    default_args = '-DCMAKE_CXX_COMPILER_ARG1:STRING=\'-std=c++14 -Wall -Werror -g -gdwarf-2 -fno-elide-constructors -fprofile-arcs -ftest-coverage -O0 -fPIC -m64  -fno-inline -fno-inline-small-functions -fno-default-inline -I /usr/local/probe/include'
+    default_args = '-DCMAKE_CXX_COMPILER_ARG1:STRING=\'-std=c++14 -Wall -Werror -g -gdwarf-2 -O0 -fPIC -m64 -isystem/usr/local/gcc/include -isystem/usr/local/probe/include -fprofile-arcs -ftest-coverage'
     if PROBE_BUILD:
         default_args += ' -Wl,-rpath -Wl,. -Wl,-rpath -Wl,/usr/local/gcc/lib -Wl,-rpath -Wl,/usr/local/gcc/lib64 '
     default_args += '\''
