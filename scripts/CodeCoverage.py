@@ -133,7 +133,7 @@ def get_gcovr():
 
 def get_gcov():
     if PROBE_BUILD:
-        return '--gcov-executable /usr/bin/gcov'
+        return '--gcov-executable /usr/local/gcc/bin/gcov'
     return '--gcov-executable gcov'
 
 
