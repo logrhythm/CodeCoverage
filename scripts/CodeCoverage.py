@@ -115,6 +115,7 @@ def compile_project():
 def run_UnitTestRunner(launch_dir):
     CP_RUNNER_SCRIPT = 'cp ' + launch_dir + '/scripts/unitTestRunner.sh ' + launch_dir + '/build'
     CP_RUNNER_SCRIPT_CMD = [CP_RUNNER_SCRIPT]
+    print(CP_RUNNER_SCRIPT_CMD)
     ret_code = subprocess.check_call(CP_RUNNER_SCRIPT_CMD, stderr=subprocess.STDOUT, shell=True)
     print "Copy script return code: " + str(ret_code)
     RUNNER_SCRIPT_CMD = ['sh unitTestRunner.sh']
@@ -156,8 +157,17 @@ def run_gcovr(project_name, whitelist_filter, blacklist_filter):
         print "ERROR: Gcovr process failed! : \n" + GCOVR_CMD_STR
         sys.exit(1)
 
-def copy_coverage_files_into_cov_dir(object_dir, launch_dir):
-    CP_COV_FILES_STR = 'cp ' + launch_dir + '/build/CMakeFiles/' + object_dir + '/src/* ' + launch_dir +'/coverage'
+def copy_coverage_files_into_cov_dir(object_dir, launch_dir, rpmbuild_dir):
+    cov_files = ''
+    for root, dirs, files in os.walk(rpmbuild_dir):
+        if 'UnitTestRunner.dir' in root:
+            continue
+        for f in files:
+           if f.endswith('.gcda') or f.endswith('.gcno'):
+              cov_files += (os.path.join(root, f) + ' ')
+
+    CP_COV_FILES_STR = 'cp -n ' + cov_files + launch_dir + '/coverage'
+
     try:
         ret_code = subprocess.check_call([CP_COV_FILES_STR], stderr=subprocess.STDOUT, shell=True)
         print "Copy coverage files into coverage directory return code: " + str(ret_code)
@@ -205,13 +215,14 @@ def main(argv):
 
     LAUNCH_DIR = os.getcwd()
     PROJECT = project_name
+    HOME_DIR = os.path.expanduser('~')
+    RPMBUILD_DIR = HOME_DIR + '/rpmbuild/BUILD/' + PROJECT
     OBJ_DIR = PROJECT + '.dir'
     USER_WHITELIST = None
     USER_BLACKLIST = None
     GTEST_ZIP_PATH = LAUNCH_DIR + '/3rdparty/gtest-1.7.0.zip'
     global PROBE_BUILD
     global DEFAULT_BLACKLIST
-
     if os.path.exists("/usr/local/probe/bin/cmake"):
         PROBE_BUILD=True
         print "Using /usr/local/probe as the default path"
@@ -232,19 +243,24 @@ def main(argv):
     unzip_file(full_file_path=GTEST_ZIP_PATH, directory_to_extract_to="3rdparty")
 
     clean_and_build_directory(dir_path="coverage")
-    clean_and_build_directory(dir_path="build")
+    #clean_and_build_directory(dir_path="build")
 
-    os.chdir(LAUNCH_DIR + '/build')
-    run_cmake_cmd()
-    compile_project()
-    run_UnitTestRunner(launch_dir=LAUNCH_DIR)
+    #os.chdir(LAUNCH_DIR + '/build')
+    #run_cmake_cmd()
+    #compile_project()
+    #run_UnitTestRunner(launch_dir=LAUNCH_DIR)
     os.chdir(LAUNCH_DIR + '/coverage')
 
     gcovr_whitelist = generate_gcovr_filter(formatted_user_list=format_user_list(user_list=USER_WHITELIST),
                                             default_list=DEFAULT_WHITELIST)
     gcovr_blacklist = generate_gcovr_filter(formatted_user_list=format_user_list(user_list=USER_BLACKLIST),
                                             default_list=DEFAULT_BLACKLIST)
-    copy_coverage_files_into_cov_dir(object_dir=OBJ_DIR, launch_dir=LAUNCH_DIR)
+
+    # ProbeTransmogrifier builds both Probe_Transmogrifier and ProbeTransmogrifier. ProbeTransmogrifier has the code we want to cover, not Probe_Transmnogrifier
+    if PROJECT == 'Probe_Transmogrifier':
+       RPMBUILD_DIR = HOME_DIR + '/rpmbuild/BUILD/' + 'ProbeTransmogrifier'
+
+    copy_coverage_files_into_cov_dir(object_dir=OBJ_DIR, launch_dir=LAUNCH_DIR, rpmbuild_dir=RPMBUILD_DIR)
     run_gcovr(project_name=PROJECT,
               whitelist_filter=gcovr_whitelist,
               blacklist_filter=gcovr_blacklist)
