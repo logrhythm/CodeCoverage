@@ -166,7 +166,7 @@ def copy_coverage_files_into_cov_dir(object_dir, launch_dir, rpmbuild_dir):
            if f.endswith('.gcda') or f.endswith('.gcno'):
               cov_files += (os.path.join(root, f) + ' ')
 
-    CP_COV_FILES_STR = 'cp -n ' + cov_files + launch_dir + '/coverage'
+    CP_COV_FILES_STR = 'cp -n ' + cov_files + ' ' + launch_dir + '/coverage'
 
     try:
         ret_code = subprocess.check_call([CP_COV_FILES_STR], stderr=subprocess.STDOUT, shell=True)
