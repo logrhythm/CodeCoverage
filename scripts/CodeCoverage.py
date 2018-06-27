@@ -87,51 +87,6 @@ def get_compiler():
         return '-DCMAKE_CXX_COMPILER=/usr/local/gcc/bin/g++'
     return 'g++'
 
-def run_cmake_cmd():
-    CMAKE = get_cmake()
-    DEBUG_FLAG = '-DUSE_LR_DEBUG=ON'
-    VERSION_FLAG = '-DVERSION=' + str(1)
-    ARG1_FLAGS = get_make_arguments()
-    COMPILER_EXE_FLAG =  get_compiler()
-    CMAKELISTS_DIR = '..'
-    CMAKE_STR = CMAKE + ' ' + DEBUG_FLAG + ' ' + VERSION_FLAG + ' ' + ARG1_FLAGS + ' ' + COMPILER_EXE_FLAG + ' ' + CMAKELISTS_DIR
-    CMAKE_CMD = [CMAKE_STR]
-    try:
-        ret_code = subprocess.check_call(CMAKE_CMD, stderr=subprocess.STDOUT, shell=True)
-        print "CMake return code: " + str(ret_code)
-    except:
-        print "ERROR: CMake command failed!"
-        sys.exit(1)
-
-def compile_project():
-    COMPILE_CMD = ['make -j8']
-    try:
-        ret_code = subprocess.check_call(COMPILE_CMD, stderr=subprocess.STDOUT, shell=True)
-        print "Compile return code: " + str(ret_code)
-    except:
-        print "ERROR: Compile project failed!"
-        sys.exit(1)
-
-def run_UnitTestRunner(launch_dir):
-    CP_RUNNER_SCRIPT = 'cp ' + launch_dir + '/scripts/unitTestRunner.sh ' + launch_dir + '/build'
-    CP_RUNNER_SCRIPT_CMD = [CP_RUNNER_SCRIPT]
-    print(CP_RUNNER_SCRIPT_CMD)
-    ret_code = subprocess.check_call(CP_RUNNER_SCRIPT_CMD, stderr=subprocess.STDOUT, shell=True)
-    print "Copy script return code: " + str(ret_code)
-    RUNNER_SCRIPT_CMD = ['sh unitTestRunner.sh']
-    try:
-        ret_code = subprocess.check_call(RUNNER_SCRIPT_CMD, stderr=subprocess.STDOUT, shell=True)
-        print "UnitTestRunner process return code: " + str(ret_code)
-    except:
-        # The script will not exit here, as some repos have tests that will
-        #   inherently fail during code coverage (FileIO, ProbeTransmogrifier)
-        print "ERROR: UnitTestRunner process failed!"
-
-def get_gcovr():
-    if PROBE_BUILD:
-        return '/usr/local/probe/bin/gcovr'
-    return 'gcovr'
-
 def get_gcov():
     if PROBE_BUILD:
         return '--gcov-executable /usr/local/gcc/bin/gcov'
@@ -241,14 +196,7 @@ def main(argv):
         print "USER_BLACKLIST = " + USER_BLACKLIST
 
     unzip_file(full_file_path=GTEST_ZIP_PATH, directory_to_extract_to="3rdparty")
-
     clean_and_build_directory(dir_path="coverage")
-    #clean_and_build_directory(dir_path="build")
-
-    #os.chdir(LAUNCH_DIR + '/build')
-    #run_cmake_cmd()
-    #compile_project()
-    #run_UnitTestRunner(launch_dir=LAUNCH_DIR)
     os.chdir(LAUNCH_DIR + '/coverage')
 
     gcovr_whitelist = generate_gcovr_filter(formatted_user_list=format_user_list(user_list=USER_WHITELIST),
