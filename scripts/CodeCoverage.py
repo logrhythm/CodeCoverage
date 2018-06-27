@@ -116,7 +116,7 @@ def run_gcovr(project_name, whitelist_filter, blacklist_filter):
         print "ERROR: Gcovr process failed! : \n" + GCOVR_CMD_STR
         sys.exit(1)
 
-def copy_coverage_files_into_cov_dir(object_dir, launch_dir, rpmbuild_dir):
+def copy_coverage_files_into_cov_dir(launch_dir, rpmbuild_dir):
     cov_files = ''
     for root, dirs, files in os.walk(rpmbuild_dir):
         if 'UnitTestRunner.dir' in root:
@@ -212,7 +212,7 @@ def main(argv):
     if PROJECT == 'Probe_Transmogrifier':
        RPMBUILD_DIR = HOME_DIR + '/rpmbuild/BUILD/' + 'ProbeTransmogrifier'
 
-    copy_coverage_files_into_cov_dir(object_dir=OBJ_DIR, launch_dir=LAUNCH_DIR, rpmbuild_dir=RPMBUILD_DIR)
+    copy_coverage_files_into_cov_dir(launch_dir=LAUNCH_DIR, rpmbuild_dir=RPMBUILD_DIR)
     run_gcovr(project_name=PROJECT,
               whitelist_filter=gcovr_whitelist,
               blacklist_filter=gcovr_blacklist)
