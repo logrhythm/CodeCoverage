@@ -125,6 +125,7 @@ def copy_coverage_files_into_cov_dir(launch_dir, rpmbuild_dir):
            if f.endswith('.gcda') or f.endswith('.gcno'):
               cov_files += (os.path.join(root, f) + ' ')
 
+    
     CP_COV_FILES_STR = 'cp -n ' + cov_files + ' ' + launch_dir + '/coverage'
 
     try:
@@ -179,7 +180,7 @@ def main(argv):
     OBJ_DIR = PROJECT + '.dir'
     USER_WHITELIST = None
     USER_BLACKLIST = None
-    GTEST_ZIP_PATH = LAUNCH_DIR + '/3rdparty/gtest-1.7.0.zip'
+    GTEST_ZIP_PATH = LAUNCH_DIR + '/thirdparty/gtest-1.7.0.zip'
     global PROBE_BUILD
     global DEFAULT_BLACKLIST
     if os.path.exists("/usr/local/probe/bin/cmake"):
@@ -199,7 +200,7 @@ def main(argv):
         USER_BLACKLIST = args.blacklist
         print "USER_BLACKLIST = " + USER_BLACKLIST
 
-    unzip_file(full_file_path=GTEST_ZIP_PATH, directory_to_extract_to="3rdparty")
+    unzip_file(full_file_path=GTEST_ZIP_PATH, directory_to_extract_to="thirdparty")
     clean_and_build_directory(dir_path="coverage")
     os.chdir(LAUNCH_DIR + '/coverage')
 
