@@ -92,6 +92,10 @@ def get_gcov():
         return '--gcov-executable /usr/local/gcc/bin/gcov'
     return '--gcov-executable gcov'
 
+def get_gcovr():
+    if PROBE_BUILD:
+        return '/usr/local/probe/bin/gcovr'
+    return 'gcovr'
 
 def run_gcovr(project_name, whitelist_filter, blacklist_filter):
     GCOVR = get_gcovr()
