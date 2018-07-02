@@ -69,23 +69,6 @@ def unzip_file(full_file_path, directory_to_extract_to):
     to_unzip.close()
 
 
-def get_cmake(): 
-    if PROBE_BUILD:
-        print "using /usr/local/probe/bin/cmake"
-        return '/usr/local/probe/bin/cmake'
-    return 'cmake'
-
-def get_make_arguments():
-    default_args = '-DCMAKE_CXX_COMPILER_ARG1:STRING=\'-std=c++14 -Wall -Werror -g -gdwarf-2 -O0 -fPIC -m64 -isystem/usr/local/gcc/include -isystem/usr/local/probe/include -fprofile-arcs -ftest-coverage'
-    if PROBE_BUILD:
-        default_args += ' -Wl,-rpath -Wl,. -Wl,-rpath -Wl,/usr/local/gcc/lib -Wl,-rpath -Wl,/usr/local/gcc/lib64 '
-    default_args += '\''
-    return default_args
-
-def get_compiler():
-    if PROBE_BUILD:
-        return '-DCMAKE_CXX_COMPILER=/usr/local/gcc/bin/g++'
-    return 'g++'
 
 def get_gcov():
     if PROBE_BUILD:
