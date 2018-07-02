@@ -121,9 +121,9 @@ def copy_coverage_files_into_cov_dir(launch_dir, rpmbuild_dir):
     for root, dirs, files in os.walk(rpmbuild_dir):
         if 'UnitTestRunner.dir' in root:
             continue
-        for f in files:
-           if f.endswith('.gcda') or f.endswith('.gcno'):
-              cov_files += (os.path.join(root, f) + ' ')
+        for filename in files:
+           if filename.endswith('.gcda') or filename.endswith('.gcno'):
+              cov_files += (os.path.join(root, filename) + ' ')
 
     
     CP_COV_FILES_STR = 'cp -n ' + cov_files + ' ' + launch_dir + '/coverage'
