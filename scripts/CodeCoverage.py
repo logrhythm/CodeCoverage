@@ -209,7 +209,7 @@ def main(argv):
     gcovr_blacklist = generate_gcovr_filter(formatted_user_list=format_user_list(user_list=USER_BLACKLIST),
                                             default_list=DEFAULT_BLACKLIST)
 
-    # ProbeTransmogrifier builds both Probe_Transmogrifier and ProbeTransmogrifier. ProbeTransmogrifier has the code we want to cover, not Probe_Transmnogrifier
+    # ProbeTransmogrifier builds both Probe_Transmogrifier and ProbeTransmogrifier. ProbeTransmogrifier has the code we want to cover, not Probe_Transmogrifier
     if PROJECT == 'Probe_Transmogrifier':
        RPMBUILD_DIR = HOME_DIR + '/rpmbuild/BUILD/' + 'ProbeTransmogrifier'
 
