@@ -99,7 +99,7 @@ def run_gcovr(project_name, whitelist_filter, blacklist_filter):
         print "ERROR: Gcovr process failed! : \n" + GCOVR_CMD_STR
         sys.exit(1)
 
-def copy_coverage_files_into_cov_dir(launch_dir, rpmbuild_dir):
+'''def copy_coverage_files_into_cov_dir(launch_dir, rpmbuild_dir):
     cov_files = ''
     for root, dirs, files in os.walk(rpmbuild_dir):
         if 'UnitTestRunner.dir' in root:
@@ -111,6 +111,16 @@ def copy_coverage_files_into_cov_dir(launch_dir, rpmbuild_dir):
     
     CP_COV_FILES_STR = 'cp -n ' + cov_files + ' ' + launch_dir + '/coverage'
 
+    try:
+        ret_code = subprocess.check_call([CP_COV_FILES_STR], stderr=subprocess.STDOUT, shell=True)
+        print "Copy coverage files into coverage directory return code: " + str(ret_code)
+    except:
+        print "ERROR: Copy coverage files into coverage directory failed!"
+        sys.exit(1)
+'''
+
+def copy_coverage_files_into_cov_dir(launch_dir, object_dir):
+    CP_COV_FILES_STR = 'cp ' + launch_dir + 'CMakeFiles/' + object_dir + '/src/* ' + launch_dir +'/coverage'
     try:
         ret_code = subprocess.check_call([CP_COV_FILES_STR], stderr=subprocess.STDOUT, shell=True)
         print "Copy coverage files into coverage directory return code: " + str(ret_code)
@@ -194,9 +204,11 @@ def main(argv):
 
     # ProbeTransmogrifier builds both Probe_Transmogrifier and ProbeTransmogrifier. ProbeTransmogrifier has the code we want to cover, not Probe_Transmogrifier
     if PROJECT == 'Probe_Transmogrifier':
-       RPMBUILD_DIR = HOME_DIR + '/rpmbuild/BUILD/' + 'ProbeTransmogrifier'
+       #RPMBUILD_DIR = HOME_DIR + '/rpmbuild/BUILD/' + 'ProbeTransmogrifier'
+       OBJ_DIR = "ProbeTransmgrifier.dir"
 
-    copy_coverage_files_into_cov_dir(launch_dir=LAUNCH_DIR, rpmbuild_dir=RPMBUILD_DIR)
+    #copy_coverage_files_into_cov_dir(launch_dir=LAUNCH_DIR, rpmbuild_dir=RPMBUILD_DIR)
+    copy_coverage_files_into_cov_dir(launch_dir=LAUNCH_DIR, object_dir=OBJ_DIR)
     run_gcovr(project_name=PROJECT,
               whitelist_filter=gcovr_whitelist,
               blacklist_filter=gcovr_blacklist)
