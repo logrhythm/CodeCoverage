@@ -120,7 +120,7 @@ def run_gcovr(project_name, whitelist_filter, blacklist_filter):
 '''
 
 def copy_coverage_files_into_cov_dir(launch_dir, object_dir):
-    CP_COV_FILES_STR = 'cp ' + launch_dir + 'CMakeFiles/' + object_dir + '/src/* ' + launch_dir +'/coverage'
+    CP_COV_FILES_STR = 'cp ' + launch_dir + '/CMakeFiles/' + object_dir + '/src/* ' + launch_dir +'/coverage'
     try:
         ret_code = subprocess.check_call([CP_COV_FILES_STR], stderr=subprocess.STDOUT, shell=True)
         print "Copy coverage files into coverage directory return code: " + str(ret_code)
