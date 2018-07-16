@@ -99,10 +99,10 @@ def run_gcovr(project_name, whitelist_filter, blacklist_filter):
         print "ERROR: Gcovr process failed! : \n" + GCOVR_CMD_STR
         sys.exit(1)
 
-'''def copy_coverage_files_into_cov_dir(launch_dir, rpmbuild_dir):
+def copy_coverage_files_into_cov_dir(launch_dir, rpmbuild_dir):
     cov_files = ''
     for root, dirs, files in os.walk(rpmbuild_dir):
-        if 'UnitTestRunner.dir' in root:
+        if 'UnitTestRunner.dir' in root or 'gtest' in root:
             continue
         for filename in files:
            if filename.endswith('.gcda') or filename.endswith('.gcno'):
@@ -127,7 +127,7 @@ def copy_coverage_files_into_cov_dir(launch_dir, object_dir):
     except:
         print "ERROR: Copy coverage files into coverage directory failed!"
         sys.exit(1)
-
+'''
 def format_user_list(user_list):
     formatted_list = None
     if user_list is not None:
