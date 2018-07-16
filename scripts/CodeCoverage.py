@@ -119,8 +119,8 @@ def copy_coverage_files_into_cov_dir(launch_dir, rpmbuild_dir):
         sys.exit(1)
 '''
 
-def copy_coverage_files_into_cov_dir(launch_dir, object_dir):
-    CP_COV_FILES_STR = 'cp ' + launch_dir + '/CMakeFiles/' + object_dir + '/src/* ' + launch_dir +'/coverage'
+def copy_coverage_files_into_cov_dir(launch_dir, rpmbuild_dir):
+    CP_COV_FILES_STR = 'cp ' + launch_dir + '/CMakeFiles/' + rpmbuild_dir + '/src/* ' + launch_dir +'/coverage'
     try:
         ret_code = subprocess.check_call([CP_COV_FILES_STR], stderr=subprocess.STDOUT, shell=True)
         print "Copy coverage files into coverage directory return code: " + str(ret_code)
@@ -208,7 +208,7 @@ def main(argv):
        OBJ_DIR = "ProbeTransmgrifier.dir"
 
     #copy_coverage_files_into_cov_dir(launch_dir=LAUNCH_DIR, rpmbuild_dir=RPMBUILD_DIR)
-    copy_coverage_files_into_cov_dir(launch_dir=LAUNCH_DIR, object_dir=OBJ_DIR)
+    copy_coverage_files_into_cov_dir(launch_dir=LAUNCH_DIR, rpmbuild_dir=RPMBUILD_DIR)
     run_gcovr(project_name=PROJECT,
               whitelist_filter=gcovr_whitelist,
               blacklist_filter=gcovr_blacklist)
