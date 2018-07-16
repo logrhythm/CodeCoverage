@@ -170,7 +170,6 @@ def main(argv):
     PROJECT = project_name
     HOME_DIR = os.path.expanduser('~')
     RPMBUILD_DIR = HOME_DIR + '/rpmbuild/BUILD/' + PROJECT
-    OBJ_DIR = PROJECT + '.dir'
     USER_WHITELIST = None
     USER_BLACKLIST = None
     GTEST_ZIP_PATH = LAUNCH_DIR + '/thirdparty/gtest-1.7.0.zip'
@@ -204,10 +203,8 @@ def main(argv):
 
     # ProbeTransmogrifier builds both Probe_Transmogrifier and ProbeTransmogrifier. ProbeTransmogrifier has the code we want to cover, not Probe_Transmogrifier
     if PROJECT == 'Probe_Transmogrifier':
-       #RPMBUILD_DIR = HOME_DIR + '/rpmbuild/BUILD/' + 'ProbeTransmogrifier'
-       OBJ_DIR = "ProbeTransmgrifier.dir"
+       RPMBUILD_DIR = HOME_DIR + '/rpmbuild/BUILD/' + 'ProbeTransmogrifier'
 
-    #copy_coverage_files_into_cov_dir(launch_dir=LAUNCH_DIR, rpmbuild_dir=RPMBUILD_DIR)
     copy_coverage_files_into_cov_dir(launch_dir=LAUNCH_DIR, rpmbuild_dir=RPMBUILD_DIR)
     run_gcovr(project_name=PROJECT,
               whitelist_filter=gcovr_whitelist,
