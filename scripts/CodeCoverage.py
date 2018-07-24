@@ -117,17 +117,7 @@ def copy_coverage_files_into_cov_dir(launch_dir, rpmbuild_dir):
     except:
         print "ERROR: Copy coverage files into coverage directory failed!"
         sys.exit(1)
-'''
 
-def copy_coverage_files_into_cov_dir(launch_dir, rpmbuild_dir):
-    CP_COV_FILES_STR = 'cp ' + launch_dir + '/CMakeFiles/' + rpmbuild_dir + '/src/* ' + launch_dir +'/coverage'
-    try:
-        ret_code = subprocess.check_call([CP_COV_FILES_STR], stderr=subprocess.STDOUT, shell=True)
-        print "Copy coverage files into coverage directory return code: " + str(ret_code)
-    except:
-        print "ERROR: Copy coverage files into coverage directory failed!"
-        sys.exit(1)
-'''
 def format_user_list(user_list):
     formatted_list = None
     if user_list is not None:
