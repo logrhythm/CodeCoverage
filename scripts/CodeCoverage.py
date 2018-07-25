@@ -69,73 +69,16 @@ def unzip_file(full_file_path, directory_to_extract_to):
     to_unzip.close()
 
 
-def get_cmake(): 
-    if PROBE_BUILD:
-        print "using /usr/local/probe/bin/cmake"
-        return '/usr/local/probe/bin/cmake'
-    return 'cmake'
-
-def get_make_arguments():
-    default_args = '-DCMAKE_CXX_COMPILER_ARG1:STRING=\'-std=c++14 -Wall -Werror -g -gdwarf-2 -fno-elide-constructors -fprofile-arcs -ftest-coverage -O0 -fPIC -m64  -fno-inline -fno-inline-small-functions -fno-default-inline -I /usr/local/probe/include'
-    if PROBE_BUILD:
-        default_args += ' -Wl,-rpath -Wl,. -Wl,-rpath -Wl,/usr/local/gcc/lib -Wl,-rpath -Wl,/usr/local/gcc/lib64 '
-    default_args += '\''
-    return default_args
-
-def get_compiler():
-    if PROBE_BUILD:
-        return '-DCMAKE_CXX_COMPILER=/usr/local/gcc/bin/g++'
-    return 'g++'
-
-def run_cmake_cmd():
-    CMAKE = get_cmake()
-    DEBUG_FLAG = '-DUSE_LR_DEBUG=ON'
-    VERSION_FLAG = '-DVERSION=' + str(1)
-    ARG1_FLAGS = get_make_arguments()
-    COMPILER_EXE_FLAG =  get_compiler()
-    CMAKELISTS_DIR = '..'
-    CMAKE_STR = CMAKE + ' ' + DEBUG_FLAG + ' ' + VERSION_FLAG + ' ' + ARG1_FLAGS + ' ' + COMPILER_EXE_FLAG + ' ' + CMAKELISTS_DIR
-    CMAKE_CMD = [CMAKE_STR]
-    try:
-        ret_code = subprocess.check_call(CMAKE_CMD, stderr=subprocess.STDOUT, shell=True)
-        print "CMake return code: " + str(ret_code)
-    except:
-        print "ERROR: CMake command failed!"
-        sys.exit(1)
-
-def compile_project():
-    COMPILE_CMD = ['make -j8']
-    try:
-        ret_code = subprocess.check_call(COMPILE_CMD, stderr=subprocess.STDOUT, shell=True)
-        print "Compile return code: " + str(ret_code)
-    except:
-        print "ERROR: Compile project failed!"
-        sys.exit(1)
-
-def run_UnitTestRunner(launch_dir):
-    CP_RUNNER_SCRIPT = 'cp ' + launch_dir + '/scripts/unitTestRunner.sh ' + launch_dir + '/build'
-    CP_RUNNER_SCRIPT_CMD = [CP_RUNNER_SCRIPT]
-    ret_code = subprocess.check_call(CP_RUNNER_SCRIPT_CMD, stderr=subprocess.STDOUT, shell=True)
-    print "Copy script return code: " + str(ret_code)
-    RUNNER_SCRIPT_CMD = ['sh unitTestRunner.sh']
-    try:
-        ret_code = subprocess.check_call(RUNNER_SCRIPT_CMD, stderr=subprocess.STDOUT, shell=True)
-        print "UnitTestRunner process return code: " + str(ret_code)
-    except:
-        # The script will not exit here, as some repos have tests that will
-        #   inherently fail during code coverage (FileIO, ProbeTransmogrifier)
-        print "ERROR: UnitTestRunner process failed!"
-
-def get_gcovr():
-    if PROBE_BUILD:
-        return '/usr/local/probe/bin/gcovr'
-    return 'gcovr'
 
 def get_gcov():
     if PROBE_BUILD:
         return '--gcov-executable /usr/local/gcc/bin/gcov'
     return '--gcov-executable gcov'
 
+def get_gcovr():
+    if PROBE_BUILD:
+        return '/usr/local/probe/bin/gcovr'
+    return 'gcovr'
 
 def run_gcovr(project_name, whitelist_filter, blacklist_filter):
     GCOVR = get_gcovr()
@@ -156,8 +99,18 @@ def run_gcovr(project_name, whitelist_filter, blacklist_filter):
         print "ERROR: Gcovr process failed! : \n" + GCOVR_CMD_STR
         sys.exit(1)
 
-def copy_coverage_files_into_cov_dir(object_dir, launch_dir):
-    CP_COV_FILES_STR = 'cp ' + launch_dir + '/build/CMakeFiles/' + object_dir + '/src/* ' + launch_dir +'/coverage'
+def copy_coverage_files_into_cov_dir(launch_dir, rpmbuild_dir):
+    cov_files = ''
+    for root, dirs, files in os.walk(rpmbuild_dir):
+        if 'UnitTestRunner.dir' in root or 'gtest' in root:
+            continue
+        for filename in files:
+           if filename.endswith('.gcda') or filename.endswith('.gcno'):
+              cov_files += (os.path.join(root, filename) + ' ')
+
+    
+    CP_COV_FILES_STR = 'cp -n ' + cov_files + ' ' + launch_dir + '/coverage'
+
     try:
         ret_code = subprocess.check_call([CP_COV_FILES_STR], stderr=subprocess.STDOUT, shell=True)
         print "Copy coverage files into coverage directory return code: " + str(ret_code)
@@ -205,13 +158,13 @@ def main(argv):
 
     LAUNCH_DIR = os.getcwd()
     PROJECT = project_name
-    OBJ_DIR = PROJECT + '.dir'
+    HOME_DIR = os.path.expanduser('~')
+    RPMBUILD_DIR = HOME_DIR + '/rpmbuild/BUILD/' + PROJECT
     USER_WHITELIST = None
     USER_BLACKLIST = None
-    GTEST_ZIP_PATH = LAUNCH_DIR + '/3rdparty/gtest-1.7.0.zip'
+    GTEST_ZIP_PATH = LAUNCH_DIR + '/thirdparty/gtest-1.7.0.zip'
     global PROBE_BUILD
     global DEFAULT_BLACKLIST
-
     if os.path.exists("/usr/local/probe/bin/cmake"):
         PROBE_BUILD=True
         print "Using /usr/local/probe as the default path"
@@ -229,22 +182,20 @@ def main(argv):
         USER_BLACKLIST = args.blacklist
         print "USER_BLACKLIST = " + USER_BLACKLIST
 
-    unzip_file(full_file_path=GTEST_ZIP_PATH, directory_to_extract_to="3rdparty")
-
+    unzip_file(full_file_path=GTEST_ZIP_PATH, directory_to_extract_to="thirdparty")
     clean_and_build_directory(dir_path="coverage")
-    clean_and_build_directory(dir_path="build")
-
-    os.chdir(LAUNCH_DIR + '/build')
-    run_cmake_cmd()
-    compile_project()
-    run_UnitTestRunner(launch_dir=LAUNCH_DIR)
     os.chdir(LAUNCH_DIR + '/coverage')
 
     gcovr_whitelist = generate_gcovr_filter(formatted_user_list=format_user_list(user_list=USER_WHITELIST),
                                             default_list=DEFAULT_WHITELIST)
     gcovr_blacklist = generate_gcovr_filter(formatted_user_list=format_user_list(user_list=USER_BLACKLIST),
                                             default_list=DEFAULT_BLACKLIST)
-    copy_coverage_files_into_cov_dir(object_dir=OBJ_DIR, launch_dir=LAUNCH_DIR)
+
+    # ProbeTransmogrifier builds both Probe_Transmogrifier and ProbeTransmogrifier. ProbeTransmogrifier has the code we want to cover, not Probe_Transmogrifier
+    if PROJECT == 'Probe_Transmogrifier':
+       RPMBUILD_DIR = HOME_DIR + '/rpmbuild/BUILD/' + 'ProbeTransmogrifier'
+
+    copy_coverage_files_into_cov_dir(launch_dir=LAUNCH_DIR, rpmbuild_dir=RPMBUILD_DIR)
     run_gcovr(project_name=PROJECT,
               whitelist_filter=gcovr_whitelist,
               blacklist_filter=gcovr_blacklist)
