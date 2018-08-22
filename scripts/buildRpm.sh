@@ -11,7 +11,7 @@ VERSION="1.$GIT_VERSION"
 
 echo "Building $PACKAGE, type: $BUILD_TYPE, version: $VERSION"
 
-rm -rf ~/rpmbuild
+sudo rm -rf ~/rpmbuild
 rpmdev-setuptree
 cp packaging/$PACKAGE.spec ~/rpmbuild/SPECS
 rm -f $PACKAGE-$VERSION.tar.gz
