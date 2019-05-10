@@ -5,7 +5,6 @@ Summary:       A wrapper for building and running code coverage on NetMon C++ re
 Group:         Development/Tools
 License:       MIT
 URL:           https://github.com/logrhythm/codecoverage
-BuildRequires: probecmake >= 2.8
 ExclusiveArch: x86_64
 
 %description
