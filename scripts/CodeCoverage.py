@@ -167,7 +167,7 @@ def main(argv):
     global DEFAULT_BLACKLIST
     if os.path.exists("/usr/local/probe/bin/gcovr"):
         PROBE_BUILD=True
-        print "Using /usr/local/probe as the default path"
+        print "Using /usr/local/gcc/bin and /usr/local/probe/bin as the default paths"
     else: 
        PROBE_BUILD=False
        print "Using /usr/local/ as the default path"
