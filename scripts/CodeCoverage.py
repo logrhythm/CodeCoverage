@@ -11,7 +11,7 @@ import subprocess
 import os.path
 
 DEFAULT_WHITELIST = ".*cpp$"
-DEFAULT_BLACKLIST = "/usr/local/probe/.*"
+DEFAULT_BLACKLIST = "/usr/local/probe/.*|.*coverage/CMakeCXXCompilerId.*"
 
 CMAKEFILEPATH = "CMakeLists.txt"
 LIBRARY_TO_BUILD_REGEX = 'SET\(LIBRARY_TO_BUILD (.*)\)$'
@@ -165,9 +165,9 @@ def main(argv):
     GTEST_ZIP_PATH = LAUNCH_DIR + '/thirdparty/gtest-1.7.0.zip'
     global PROBE_BUILD
     global DEFAULT_BLACKLIST
-    if os.path.exists("/usr/local/probe/bin/cmake"):
+    if os.path.exists("/usr/local/probe/bin/gcovr"):
         PROBE_BUILD=True
-        print "Using /usr/local/probe as the default path"
+        print "Using /usr/local/gcc/bin and /usr/local/probe/bin as the default paths"
     else: 
        PROBE_BUILD=False
        print "Using /usr/local/ as the default path"
