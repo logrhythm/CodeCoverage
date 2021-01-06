@@ -16,8 +16,6 @@ DEFAULT_BLACKLIST = "/usr/local/probe/.*|.*coverage/CMakeCXXCompilerId.*"
 CMAKEFILEPATH = "CMakeLists.txt"
 LIBRARY_TO_BUILD_REGEX = 'SET\(LIBRARY_TO_BUILD (.*)\)$'
 
-PROBE_BUILD = True
-
 def get_file_content(filename):
     with open(filename) as filehandle:
         content = filehandle.readlines()
@@ -59,40 +57,20 @@ def remove_file_extension(filename):
 def strip_file_from_full_path(full_file_path):
     return ntpath.basename(full_file_path)
 
-def unzip_file(full_file_path, directory_to_extract_to):
-    to_unzip = zipfile.ZipFile(full_file_path, 'r')
-    unzipped_dir_name = remove_file_extension(filename=strip_file_from_full_path(full_file_path=full_file_path))
-    full_unzipped_dir_path = directory_to_extract_to + "/" + unzipped_dir_name
-    if os.path.exists(full_unzipped_dir_path):
-        destroy_directory(full_unzipped_dir_path)
-    to_unzip.extractall(directory_to_extract_to)
-    to_unzip.close()
-
-
-
-def get_gcov():
-    if PROBE_BUILD:
-        return '--gcov-executable /usr/local/gcc/bin/gcov'
-    return '--gcov-executable gcov'
-
-def get_gcovr():
-    if PROBE_BUILD:
-        return '/usr/local/probe/bin/gcovr'
-    return 'gcovr'
-
 def run_gcovr(project_name, whitelist_filter, blacklist_filter):
-    GCOVR = get_gcovr()
+    GCOVR = '/usr/local/bin/gcovr' #/usr/local/bin
     VERBOSE = '--verbose'
     SORT_PERCENTAGE = '--sort-percentage'
     FILTER = '--filter=\"'+whitelist_filter+'\"'
     EXCLUDE = '--exclude=\"'+blacklist_filter+'\"'
-    GCOV_EXE = get_gcov()
+    GCOV_EXE = '--gcov-executable /usr/bin/gcov' # /usr/bin/gcov
     EXCLUDE_UNREACHABLE = '--exclude-unreachable-branches'
     HTML_FLAGS = '--html --html-details'   
     OUTPUT_FILE = '-o coverage_' + project_name + '.html'
     FLAGS = VERBOSE + ' ' + SORT_PERCENTAGE + ' ' + FILTER + ' ' + EXCLUDE + ' ' + GCOV_EXE + ' ' + EXCLUDE_UNREACHABLE + ' ' + HTML_FLAGS
     GCOVR_CMD_STR = GCOVR + ' ' + FLAGS + ' '  + OUTPUT_FILE
     try:
+        print(GCOVR_CMD_STR)
         ret_code = subprocess.check_call([GCOVR_CMD_STR], stderr=subprocess.STDOUT, shell=True)
         print("Gcovr process return code: " + str(ret_code))
     except:
@@ -161,18 +139,7 @@ def main(argv):
     RPMBUILD_DIR = HOME_DIR + '/rpmbuild/BUILD/' + PROJECT
     USER_WHITELIST = None
     USER_BLACKLIST = None
-    GTEST_ZIP_PATH = LAUNCH_DIR + '/thirdparty/gtest-1.7.0.zip'
-    global PROBE_BUILD
     global DEFAULT_BLACKLIST
-    if os.path.exists("/usr/local/probe/bin/gcovr"):
-        PROBE_BUILD=True
-        print("Using /usr/local/gcc/bin and /usr/local/probe/bin as the default paths")
-    else: 
-       PROBE_BUILD=False
-       print("Using /usr/local/ as the default path")
-       DEFAULT_BLACKLIST = "/usr/local/.*"
-
-
 
     if args.whitelist:
         USER_WHITELIST = args.whitelist
@@ -181,7 +148,6 @@ def main(argv):
         USER_BLACKLIST = args.blacklist
         print("USER_BLACKLIST = " + USER_BLACKLIST)
 
-    unzip_file(full_file_path=GTEST_ZIP_PATH, directory_to_extract_to="thirdparty")
     clean_and_build_directory(dir_path="coverage")
     os.chdir(LAUNCH_DIR + '/coverage')
 
